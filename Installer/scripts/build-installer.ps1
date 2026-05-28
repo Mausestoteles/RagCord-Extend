@@ -54,8 +54,12 @@ if (-not $SkipModBuild) {
         # pnpm wird ueber PATH aufgeloest -- gleich wie bei der Hand-Ausfuehrung.
         & pnpm install --frozen-lockfile
         if ($LASTEXITCODE -ne 0) { throw 'pnpm install fehlgeschlagen.' }
-        & pnpm build
-        if ($LASTEXITCODE -ne 0) { throw 'pnpm build fehlgeschlagen.' }
+        # --standalone aktiviert den HTTP/GitHub-Releases-Updater (statt
+        # des git.ts-Updaters, der ein lokales .git voraussetzt). Ohne diese
+        # Flag versucht der In-Discord-Updater 'git fetch' im RagCord-
+        # Datenordner und scheitert mit 'not a git repository'.
+        & pnpm build --standalone
+        if ($LASTEXITCODE -ne 0) { throw 'pnpm build --standalone fehlgeschlagen.' }
     } finally {
         Pop-Location
     }

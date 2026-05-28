@@ -217,7 +217,7 @@ function InboxPopover({ onClose }: { onClose: () => void; }) {
                         onClose();
                     }}
                 >
-                    Forum öffnen →
+                    Forum öffnen ↗
                 </button>
             </div>
         </div>
@@ -278,7 +278,7 @@ function InboxButton() {
                         tooltip={isShown
                             ? null
                             : unreadCount > 0
-                                ? `Forum: ${unreadCount} ungelesen`
+                                ? `RagnaMod-Forum · ${unreadCount} ungelesen`
                                 : "RagnaMod-Forum"}
                         icon={() => <InboxIcon />}
                         selected={isShown || unreadCount > 0}

@@ -91,11 +91,19 @@ internal static class DiscordDetector
             return new DiscordInstall(branch, versionDir, resources,
                 InstallStatus.Installed, null);
         }
-        // Mischzustand — z.B. _app.asar da, aber app.asar weder Datei noch
-        // Verzeichnis. Discord würde nicht starten. Wizard schlägt
-        // "Reparieren" vor.
+        if (asarFileExists && underscoreExists)
+        {
+            // Halb-deinstallierter Vencord-Rest o.ä.: das original-Bundle
+            // wurde nach _app.asar gesichert, aber app.asar steht wieder als
+            // separate Datei daneben. Discord boot-bar, aber inkonsistent.
+            // Der Installer räumt das beim nächsten Inject auf.
+            return new DiscordInstall(branch, versionDir, resources, InstallStatus.Installed,
+                "Vencord-/Mod-Reste vorhanden — Installation räumt sie auf.");
+        }
+        // _app.asar da, app.asar weder Datei noch Verzeichnis — Discord
+        // würde gar nicht starten. Manuelle Reparatur nötig.
         return new DiscordInstall(branch, versionDir, resources, InstallStatus.Broken,
-            "Inkonsistenter Zustand in resources/. Reparieren empfohlen.");
+            "Discord-Bundle fehlt. Bitte Discord neu installieren.");
     }
 
     /// <summary>

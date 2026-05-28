@@ -59,15 +59,29 @@ internal static class Injector
 
         var asarIsDir = Directory.Exists(appAsar);
         var asarIsFile = File.Exists(appAsar) && !asarIsDir;
-        var underscoreIsFile = File.Exists(underscoreAsar);
+        var underscoreExists = File.Exists(underscoreAsar);
 
-        // Erst-Injektion: Datei umbenennen, dann mkdir + Stub schreiben.
-        if (asarIsFile && !underscoreIsFile)
+        // Vier mögliche Ausgangszustände in resources/. Wir bringen alle
+        // in die Form "_app.asar = Original, app.asar = Stub-Verzeichnis":
+        //
+        //   A) app.asar=Datei, _app.asar=fehlt
+        //      → frische Discord-Installation. app.asar → _app.asar umbenennen.
+        //   B) app.asar=Verzeichnis, _app.asar=Datei
+        //      → schon injiziert (Vencord, alter RagCord, etc.). Stub wird gleich
+        //        überschrieben — Verzeichnis kann bleiben.
+        //   C) app.asar=Datei, _app.asar=Datei
+        //      → halb-deinstalliert / verwaister Vencord-Cleanup-Rest. Die
+        //        app.asar-Datei ist hier Müll (entweder Vencord-Stub oder ein
+        //        Discord-Update-Artefakt); _app.asar ist das echte Original.
+        //        Wir werfen die verwaiste app.asar weg.
+        //   D) app.asar=Verzeichnis, _app.asar=fehlt
+        //      → ein anderer Mod hat das Original verloren. Hier weiterzumachen
+        //        wäre fahrlässig, weil Discord ohne _app.asar nicht mehr bootet.
+
+        if (asarIsFile && !underscoreExists)
         {
-            try
-            {
-                File.Move(appAsar, underscoreAsar);
-            }
+            // A
+            try { File.Move(appAsar, underscoreAsar); }
             catch (IOException e)
             {
                 throw new InjectorException(
@@ -75,19 +89,35 @@ internal static class Injector
                     "(läuft Discord noch?). Bitte schließe Discord und versuche es erneut.",
                     e);
             }
-            asarIsDir = false;
-            underscoreIsFile = true;
         }
-
-        // Reparieren / Re-Inject: Ordner & Original sind beide schon da.
-        // Wir schreiben den Stub einfach neu (Inhalt referenziert eventuell
-        // einen aktualisierten patcher.js-Pfad).
-        if (!underscoreIsFile)
+        else if (asarIsFile && underscoreExists)
+        {
+            // C – verwaiste app.asar-Datei wegräumen
+            try { File.Delete(appAsar); }
+            catch (IOException e)
+            {
+                throw new InjectorException(
+                    $"{install.Branch.DisplayName}: verwaiste app.asar-Datei konnte nicht " +
+                    "entfernt werden (Discord noch offen oder Datei gesperrt?).",
+                    e);
+            }
+        }
+        else if (asarIsDir && !underscoreExists)
+        {
+            // D
+            throw new InjectorException(
+                $"{install.Branch.DisplayName}: app.asar liegt als Verzeichnis vor, aber " +
+                "_app.asar fehlt — das Original-Bundle ist nicht auffindbar. " +
+                "Bitte Discord komplett deinstallieren (inkl. %LocalAppData%\\Discord) und " +
+                "neu installieren, dann das Setup nochmal starten.");
+        }
+        else if (!asarIsDir && !asarIsFile && !underscoreExists)
         {
             throw new InjectorException(
-                $"{install.Branch.DisplayName}: _app.asar nicht gefunden, app.asar aber als " +
-                "Verzeichnis vorhanden. Bitte zuerst deinstallieren oder Discord neu installieren.");
+                $"{install.Branch.DisplayName}: weder app.asar noch _app.asar vorhanden. " +
+                "Discord ist defekt — bitte neu installieren.");
         }
+        // Sonst B: Verzeichnis + Original beide da, einfach weiter zum Stub-Schreiben.
 
         Directory.CreateDirectory(appAsar);
         WriteStubFiles(appAsar);
