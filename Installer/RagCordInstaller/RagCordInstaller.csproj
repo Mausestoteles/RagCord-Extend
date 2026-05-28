@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--
+      WinForms target. WinExe so no console window pops up when the user
+      double-clicks the .exe. .NET 8 LTS — newer-than-LTS would still build,
+      but 8 is what Windows ships via Update.
+    -->
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>RagCordInstaller</AssemblyName>
+    <RootNamespace>RagCordInstaller</RootNamespace>
+    <!--
+      Optionales Icon: wenn Resources\ragcord.ico fehlt, baut die Solution
+      ohne Brand-Icon weiter durch. Sobald ein 256x256-ICO abgelegt ist,
+      wird es automatisch in die EXE eingebaut.
+    -->
+    <ApplicationIcon Condition="Exists('Resources\ragcord.ico')">Resources\ragcord.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Product>RagCord Extend Installer</Product>
+    <Company>RagnaMod</Company>
+    <Copyright>Copyright © 2026 RagnaMod</Copyright>
+    <Description>Installs RagCord Extend into Discord (Stable/PTB/Canary).</Description>
+
+    <!--
+      Single-file publish. Self-contained so the user does not need .NET 8
+      installed. Trim is OFF because WinForms reflection (designer, resource
+      loading) does not survive aggressive trimming.
+    -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      The pre-built RagCord renderer/patcher/preload files. The BuildAssets
+      folder is populated by scripts/build-installer.ps1 before publish:
+      it runs `pnpm build` in ../../Vencord and copies dist/desktop/* in.
+      Each file is embedded as a resource and unpacked at install time to
+      %AppData%/RagCord/dist/.
+    -->
+    <EmbeddedResource Include="BuildAssets\**\*" Condition="Exists('BuildAssets')">
+      <LogicalName>BuildAssets/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Resources\ragcord.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

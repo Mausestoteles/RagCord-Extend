@@ -1,0 +1,5 @@
+# Platz für ragcord.ico (Application-Icon).
+# Wird in der .csproj per <ApplicationIcon> referenziert. Solange die Datei
+# fehlt, wirft `dotnet publish` einen Fehler — entweder ein Icon hier ablegen
+# oder den ApplicationIcon-Eintrag in RagCordInstaller.csproj temporär
+# auskommentieren.

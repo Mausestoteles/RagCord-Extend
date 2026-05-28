@@ -1,0 +1,22 @@
+/*
+ * RagCord Extend palette — red on black, minimalist.
+ *
+ * Use these custom properties in plugin CSS for any RagCord-branded UI.
+ * Discord's own `--brand-500` etc. continue to drive Discord's chrome and
+ * are not overridden globally (overriding them would conflict with user
+ * themes). Anywhere upstream Vencord used a pink/purple accent for its
+ * own UI, prefer `--ragcord-accent` here instead.
+ */
+
+:root {
+  --ragcord-bg:           #0a0a0a;
+  --ragcord-bg-elev:      #161616;
+  --ragcord-border:       #2a2a2a;
+  --ragcord-text:         #f2f2f2;
+  --ragcord-text-dim:     #888888;
+  --ragcord-accent:       #dc1818;
+  --ragcord-accent-hover: #ff2222;
+  --ragcord-accent-press: #a01010;
+  --ragcord-error:        #ff5050;
+  --ragcord-success:      #4ade80;
+}

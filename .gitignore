@@ -1,0 +1,42 @@
+# ─────────────────────────────────────────────────────────────────────
+# RagCord Extend – Repo-weite Ignores
+# ─────────────────────────────────────────────────────────────────────
+# Plus die jeweiligen lokalen .gitignore-Dateien in Vencord/ und Installer/
+# (die bleiben drin, weil sie projektspezifisch sind).
+
+# Node-Build
+**/node_modules/
+**/dist/
+**/.pnpm-store/
+
+# .NET-Build
+**/bin/
+**/obj/
+**/*.user
+**/*.suo
+**/.vs/
+
+# OS-Quirks
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+
+# Local scratchpads / Logs
+*.log
+*.tmp
+*.bak
+*.backup
+*.upstream-bak/
+
+# Embedded BuildAssets im Installer werden vom Build-Skript befuellt
+# (siehe Installer/scripts/build-installer.ps1) - nicht committen.
+Installer/RagCordInstaller/BuildAssets/*
+!Installer/RagCordInstaller/BuildAssets/.gitkeep
+
+# Releases (Installer-EXE wird via GH-Release distributiert, nicht im Repo)
+*.exe
+*.msi

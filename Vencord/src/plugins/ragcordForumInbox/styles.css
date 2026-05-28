@@ -1,0 +1,167 @@
+/* ──────────────────────────────────────────────
+   RagCord Forum-Inbox – Header-Icon + Popover
+   ──────────────────────────────────────────────
+   Palette wie der Login-Gate / Theme-CSS (--ragcord-accent #dc1818). */
+
+.ragcord-inbox-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Header-Bar-Button-Anpassungen: das HeaderBarIcon bringt die Standard-
+   Hover-Styles mit; wir setzen nur die Akzentfarbe darüber. */
+.ragcord-inbox-btn .ragcord-inbox-icon {
+    color: var(--interactive-normal);
+}
+.ragcord-inbox-btn:hover .ragcord-inbox-icon {
+    color: #ff2222; /* var(--ragcord-accent-hover) */
+}
+
+/* Ungelesen-Zähler (Badge) – kleine rote Pille rechts oben am Icon.
+   pointer-events:none, damit Klick durch das Badge auf den Icon-Button
+   geht und Discord's eingebaute Hover-Pop-Tipp-Logik nicht stört. */
+.ragcord-inbox-badge {
+    position: absolute;
+    top: 0;
+    right: -2px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    background: #dc1818;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: center;
+    border-radius: 999px;
+    border: 2px solid var(--background-base-low, #1e1f22);
+    pointer-events: none;
+    box-shadow: 0 0 0 0 rgba(220, 24, 24, 0.4);
+    animation: ragcord-inbox-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes ragcord-inbox-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(220, 24, 24, 0.55); }
+    70%  { box-shadow: 0 0 0 6px rgba(220, 24, 24, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(220, 24, 24, 0); }
+}
+
+/* ── Popover ─────────────────────────────────────────────────── */
+.ragcord-inbox-popover {
+    width: 380px;
+    max-height: 520px;
+    display: flex;
+    flex-direction: column;
+    background: var(--background-base-low, #1e1f22);
+    border: 1px solid var(--border-faint, #2a2a2a);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(220, 24, 24, 0.15);
+    overflow: hidden;
+    font-family: var(--font-primary), "Inter", "Segoe UI", sans-serif;
+}
+
+.ragcord-inbox-header {
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--border-faint, #2a2a2a);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+.ragcord-inbox-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-default);
+}
+.ragcord-inbox-title::before {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-right: 8px;
+    border-radius: 50%;
+    background: #dc1818;
+    vertical-align: middle;
+}
+.ragcord-inbox-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* ── Item-Liste ──────────────────────────────────────────────── */
+.ragcord-inbox-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px;
+}
+.ragcord-inbox-empty {
+    padding: 32px 12px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.ragcord-inbox-item {
+    all: unset;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    margin: 2px 0;
+    border-radius: 4px;
+    cursor: pointer;
+    border-left: 3px solid #dc1818;
+    background: var(--background-mod-faint, rgba(255, 255, 255, 0.02));
+    transition: background 80ms ease, transform 60ms ease;
+}
+.ragcord-inbox-item:hover {
+    background: var(--background-mod-subtle, rgba(255, 255, 255, 0.06));
+}
+.ragcord-inbox-item:active {
+    transform: translateY(1px);
+}
+.ragcord-inbox-item.is-read {
+    border-left-color: transparent;
+    opacity: 0.6;
+}
+
+.ragcord-inbox-item-text {
+    font-size: 13px;
+    color: var(--text-default);
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    margin-bottom: 4px;
+}
+.ragcord-inbox-item-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* ── Footer ──────────────────────────────────────────────────── */
+.ragcord-inbox-footer {
+    border-top: 1px solid var(--border-faint, #2a2a2a);
+    padding: 10px 14px;
+    text-align: right;
+}
+.ragcord-inbox-footer-link {
+    all: unset;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #dc1818;
+    transition: color 80ms ease;
+}
+.ragcord-inbox-footer-link:hover {
+    color: #ff2222;
+}
