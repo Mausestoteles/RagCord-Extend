@@ -7,8 +7,9 @@
  * Nutzer), öffnet den DM-Kanal und sendet die Nachricht über Discords interne
  * Module. Sendet ausschließlich über den eigenen, eingeloggten Account.
  */
+import { sendMessage } from "@utils/discord";
 import definePlugin, { type PluginNative } from "@utils/types";
-import { ChannelActionCreators, MessageActions, RelationshipStore, UserStore } from "@webpack/common";
+import { ChannelActionCreators, ChannelStore, RelationshipStore, UserStore } from "@webpack/common";
 
 // Native-Bridge (Main-Prozess) — gleiche Konvention wie andere Vencord-Plugins.
 const Native = VencordNative.pluginHelpers.RagCordRemote as PluginNative<typeof import("./native")>;
@@ -29,6 +30,8 @@ function nameVariants(u: any): string[] {
 function resolveUserId(query: string): string | null {
     const q = query.trim().toLowerCase();
     if (!q) return null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const myId: string | undefined = (UserStore as any).getCurrentUser?.()?.id;
 
     const candidates: string[] = [];
     // 1) Freunde zuerst (am ehesten gemeint + DM erlaubt).
@@ -40,9 +43,10 @@ function resolveUserId(query: string): string | null {
     const all = (UserStore as any).getUsers?.() ?? {};
     candidates.push(...Object.keys(all));
 
-    // exakter Treffer hat Vorrang, sonst enthält.
+    // exakter Treffer hat Vorrang, sonst enthält. Eigener Account ausgeschlossen.
     let contains: string | null = null;
     for (const id of candidates) {
+        if (id === myId) continue;
         const u = UserStore.getUser(id);
         if (!u) continue;
         const names = nameVariants(u);
@@ -57,18 +61,22 @@ async function sendDM(user: string, text: string): Promise<string> {
     if (!userId) {
         throw new Error(`Nutzer "${user}" nicht gefunden (nur Freunde/bekannte Nutzer adressierbar).`);
     }
+    // Bestehenden DM-Kanal nehmen, sonst öffnen/erzeugen und die ID ermitteln.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const channelId: string = await (ChannelActionCreators as any).openPrivateChannel(userId);
+    let channelId: string | undefined = (ChannelStore as any).getDMFromUserId?.(userId);
+    if (!channelId) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        channelId = await (ChannelActionCreators as any).openPrivateChannel(userId);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (!channelId) channelId = (ChannelStore as any).getDMFromUserId?.(userId);
+    }
     if (!channelId) throw new Error("DM-Kanal konnte nicht geöffnet werden.");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (MessageActions as any).sendMessage(channelId, {
-        content: text,
-        tts: false,
-        invalidEmojis: [],
-        validNonShortcutEmojis: []
-    });
+    // Fork-Helfer: setzt messageData + waitForChannelReady + options korrekt
+    // (behebt den 'nonce'-Fehler des rohen MessageActions.sendMessage-Aufrufs).
+    await sendMessage(channelId, { content: text });
     const u = UserStore.getUser(userId);
-    return nameVariants(u)[0] ? (u as any).globalName || (u as any).username || user : user;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (u as any)?.globalName || (u as any)?.username || user;
 }
 
 async function tick(): Promise<void> {
